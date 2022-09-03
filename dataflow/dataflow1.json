@@ -14,10 +14,6 @@
 			],
 			"sinks": [
 				{
-					"dataset": {
-						"referenceName": "Parquet1",
-						"type": "DatasetReference"
-					},
 					"name": "sink1"
 				}
 			],
@@ -28,21 +24,21 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     limit: 100,",
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'arrayOfDocuments',",
 				"     wildcardPaths:['*.json']) ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'parquet',",
 				"     filePattern:'raw_movie_parquet',",
-				"     umask: 0022,",
-				"     preCommands: [],",
-				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
 				"          movie",
-				"     )) ~> sink1"
+				"     ),",
+				"     format: 'parquet',",
+				"     preCommands: [],",
+				"     postCommands: []) ~> sink1"
 			]
 		}
 	}
