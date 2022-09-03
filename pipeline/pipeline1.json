@@ -46,7 +46,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_movie_bronze_parquet",
+						"referenceName": "Parquet1",
 						"type": "DatasetReference"
 					}
 				]
