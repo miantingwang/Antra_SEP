@@ -51,7 +51,8 @@
 				"type": "Parquet",
 				"typeProperties": {
 					"location": {
-						"type": "AzureBlobFSLocation"
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "adfcontainer"
 					},
 					"compressionCodec": "snappy"
 				},
@@ -196,6 +197,7 @@
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     limit: 100,",
 						"     ignoreNoFilesFound: false,",
 						"     documentForm: 'arrayOfDocuments',",
 						"     wildcardPaths:['*.json']) ~> source1",
