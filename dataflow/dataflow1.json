@@ -31,7 +31,7 @@
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'arrayOfDocuments',",
 				"     wildcardPaths:['*.json']) ~> source1",
-				"source1 sink(allowSchemaDrift: false,",
+				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
 				"     umask: 0022,",
