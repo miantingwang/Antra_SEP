@@ -1,0 +1,9 @@
+{
+	"name": "chloeadf",
+	"location": "westus3",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "6bf64e9d-c3a8-4193-b9c7-7eacea0bb188",
+		"tenantId": "a943b234-63d2-4598-97b5-6534144834b5"
+	}
+}
