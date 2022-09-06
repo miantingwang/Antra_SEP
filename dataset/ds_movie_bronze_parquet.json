@@ -10,7 +10,6 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "\"movie_output.parquet\"",
 				"fileSystem": "outputmovie"
 			},
 			"compressionCodec": "none"
