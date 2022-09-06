@@ -1,9 +1,9 @@
 {
-	"name": "pipeline1",
+	"name": "raw_to_bronze",
 	"properties": {
 		"activities": [
 			{
-				"name": "Data flow1",
+				"name": "raw_to_bronze",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
