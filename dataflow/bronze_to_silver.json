@@ -3,25 +3,11 @@
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [
-				{
-					"linkedService": {
-						"referenceName": "storage_blob",
-						"type": "LinkedServiceReference"
-					},
-					"name": "source1"
-				}
-			],
+			"sources": [],
 			"sinks": [],
 			"transformations": [],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false,",
-				"     format: 'parquet',",
-				"     fileSystem: 'outputmovie',",
-				"     folderPath: 'ingestdate=2022-09-06',",
-				"     fileName: '*.parquet') ~> source1"
+				""
 			]
 		}
 	}
