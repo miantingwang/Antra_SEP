@@ -40,7 +40,7 @@
 				"     wildcardPaths:['*.json']) ~> source1",
 				"source1 foldDown(unroll(movie),",
 				"     mapColumn(",
-				"          value = movie",
+				"          movie",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
