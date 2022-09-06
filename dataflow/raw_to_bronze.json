@@ -9,7 +9,7 @@
 						"referenceName": "raw_movie",
 						"type": "DatasetReference"
 					},
-					"name": "source1"
+					"name": "rawMovieJson"
 				}
 			],
 			"sinks": [
@@ -18,12 +18,12 @@
 						"referenceName": "ds_movie_bronze_parquet",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "bronzeMovieParquetOutput"
 				}
 			],
 			"transformations": [
 				{
-					"name": "flatten1"
+					"name": "extractEachMovietoRow"
 				},
 				{
 					"name": "addMetaData"
@@ -37,14 +37,14 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'arrayOfDocuments',",
-				"     wildcardPaths:['*.json']) ~> source1",
-				"source1 foldDown(unroll(movie),",
+				"     wildcardPaths:['*.json']) ~> rawMovieJson",
+				"rawMovieJson foldDown(unroll(movie),",
 				"     mapColumn(",
 				"          movie",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
-				"     skipDuplicateMapOutputs: false) ~> flatten1",
-				"flatten1 derive(datasource = \"www.imdb.com\",",
+				"     skipDuplicateMapOutputs: false) ~> extractEachMovietoRow",
+				"extractEachMovietoRow derive(datasource = \"www.imdb.com\",",
 				"          ingesttime = currentTimestamp(),",
 				"          ingestdate = currentDate(),",
 				"          status = \"new\") ~> addMetaData",
@@ -59,7 +59,7 @@
 				"     partitionBy('key',",
 				"          0,",
 				"          ingestdate",
-				"     )) ~> sink1"
+				"     )) ~> bronzeMovieParquetOutput"
 			]
 		}
 	}

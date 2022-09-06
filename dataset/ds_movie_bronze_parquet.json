@@ -10,6 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"folderPath": "ingestdate=2022-09-06",
 				"fileSystem": "outputmovie"
 			},
 			"compressionCodec": "none"
