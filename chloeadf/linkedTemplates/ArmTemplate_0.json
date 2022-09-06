@@ -221,13 +221,15 @@
 						"addMetaData sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'parquet',",
-						"     partitionFileNames:['ds_raw_movie.parquet'],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sink1"
+						"     partitionBy('key',",
+						"          0,",
+						"          ingestdate",
+						"     )) ~> sink1"
 					]
 				}
 			},
