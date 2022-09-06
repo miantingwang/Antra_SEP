@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "dataflow1",
+						"referenceName": "raw_to_bronze",
 						"type": "DataFlowReference"
 					},
 					"compute": {
