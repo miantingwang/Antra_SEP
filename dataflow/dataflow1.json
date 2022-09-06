@@ -26,7 +26,7 @@
 					"name": "flatten1"
 				},
 				{
-					"name": "derivedColumn1"
+					"name": "addMetaData"
 				}
 			],
 			"scriptLines": [
@@ -38,14 +38,17 @@
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'arrayOfDocuments',",
 				"     wildcardPaths:['*.json']) ~> source1",
-				"source1 foldDown(unroll(movie, movie),",
+				"source1 foldDown(unroll(movie),",
 				"     mapColumn(",
 				"          value = movie",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
-				"flatten1 derive() ~> derivedColumn1",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"flatten1 derive(datasource = \"www.imdb.com\",",
+				"          ingesttime = currentTimestamp(),",
+				"          ingestdate = currentDate(),",
+				"          status = \"new\") ~> addMetaData",
+				"addMetaData sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
 				"     umask: 0022,",
@@ -54,7 +57,7 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
-				"          movie = value",
+				"          movie = datasource",
 				"     )) ~> sink1"
 			]
 		}
