@@ -23,10 +23,13 @@
 			],
 			"transformations": [
 				{
-					"name": "extractEachMovietoRow"
+					"name": "extractMovietoRow"
 				},
 				{
 					"name": "addMetaData"
+				},
+				{
+					"name": "stringify1"
 				}
 			],
 			"scriptLines": [
@@ -43,12 +46,15 @@
 				"          movie",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
-				"     skipDuplicateMapOutputs: false) ~> extractEachMovietoRow",
-				"extractEachMovietoRow derive(datasource = \"www.imdb.com\",",
+				"     skipDuplicateMapOutputs: false) ~> extractMovietoRow",
+				"extractMovietoRow derive(datasource = \"www.imdb.com\",",
 				"          ingesttime = currentTimestamp(),",
-				"          ingestdate = currentDate(),",
-				"          status = \"new\") ~> addMetaData",
-				"addMetaData sink(allowSchemaDrift: true,",
+				"          p_ingestdate = currentDate(),",
+				"          status = \"new\",",
+				"          movie = movie) ~> addMetaData",
+				"addMetaData stringify(movie = movie ? string,",
+				"     format: 'json') ~> stringify1",
+				"stringify1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
 				"     umask: 0022,",
@@ -56,9 +62,16 @@
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          datasource,",
+				"          ingesttime,",
+				"          movie,",
+				"          status,",
+				"          p_ingestdate",
+				"     ),",
 				"     partitionBy('key',",
 				"          0,",
-				"          ingestdate",
+				"          p_ingestdate",
 				"     )) ~> bronzeMovieParquetOutput"
 			]
 		}
