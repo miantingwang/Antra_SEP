@@ -1,0 +1,19 @@
+{
+	"name": "ds_movie_silver_parquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storage_blob",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "output-silver-movie"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

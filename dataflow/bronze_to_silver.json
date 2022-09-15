@@ -21,6 +21,24 @@
 					"name": "movieGenreJunctionSink"
 				},
 				{
+					"dataset": {
+						"referenceName": "ds_genre_lookup_parquet",
+						"type": "DatasetReference"
+					},
+					"name": "silverGenreLookupSink"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_language_lookup_parquet",
+						"type": "DatasetReference"
+					},
+					"name": "silverLanguageLookupOutput"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_movie_silver_parquet",
+						"type": "DatasetReference"
+					},
 					"name": "sink1"
 				}
 			],
@@ -38,16 +56,43 @@
 					"name": "copyMovieColumn"
 				},
 				{
-					"name": "select1"
+					"name": "genreExpandPrep"
 				},
 				{
 					"name": "movieGenreJunction"
 				},
 				{
-					"name": "aggregate1"
+					"name": "genreLookupSilver"
 				},
 				{
-					"name": "select2"
+					"name": "genreLookupPrep"
+				},
+				{
+					"name": "selectOriginalLanguage"
+				},
+				{
+					"name": "createSurrogateKey"
+				},
+				{
+					"name": "groupByLanguage"
+				},
+				{
+					"name": "selectDistinctLanguage"
+				},
+				{
+					"name": "adjustColumnOrder"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "filterCleanData"
+				},
+				{
+					"name": "filterQuarantineData"
 				}
 			],
 			"scriptLines": [
@@ -110,8 +155,8 @@
 				"          genres",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1",
-				"select1 foldDown(unroll(genres, genres),",
+				"     skipDuplicateMapOutputs: true) ~> genreExpandPrep",
+				"genreExpandPrep foldDown(unroll(genres, genres),",
 				"     mapColumn(",
 				"          movie_id = Id,",
 				"          genre_id = genres.id,",
@@ -119,14 +164,61 @@
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> movieGenreJunction",
-				"select2 aggregate(groupBy(genre_id),",
-				"     genre_name = max(genre_name)) ~> aggregate1",
+				"genreLookupPrep aggregate(groupBy(genre_id),",
+				"     genre_name = max(genre_name)) ~> genreLookupSilver",
 				"movieGenreJunction select(mapColumn(",
 				"          genre_id,",
 				"          genre_name",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select2",
+				"     skipDuplicateMapOutputs: true) ~> genreLookupPrep",
+				"silverReady select(mapColumn(",
+				"          OriginalLanguage",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectOriginalLanguage",
+				"selectDistinctLanguage keyGenerate(output(language_id as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> createSurrogateKey",
+				"selectOriginalLanguage aggregate(groupBy(OriginalLanguage),",
+				"     OriginalLanguage2 = max(OriginalLanguage)) ~> groupByLanguage",
+				"groupByLanguage select(mapColumn(",
+				"          OriginalLanguage",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectDistinctLanguage",
+				"createSurrogateKey select(mapColumn(",
+				"          language_id,",
+				"          OriginalLanguage",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> adjustColumnOrder",
+				"silverReady, createSurrogateKey join(silverReady@OriginalLanguage == selectDistinctLanguage@OriginalLanguage,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 select(mapColumn(",
+				"          Id,",
+				"          Title,",
+				"          Overview,",
+				"          Tagline,",
+				"          Budget,",
+				"          Revenue,",
+				"          ImdbUrl,",
+				"          TmdbUrl,",
+				"          PosterUrl,",
+				"          BackdropUrl,",
+				"          language_id,",
+				"          ReleaseDate,",
+				"          RunTime,",
+				"          Price,",
+				"          p_CreatedDate = CreatedDate",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 filter(RunTime >= 0) ~> filterCleanData",
+				"select1 filter(RunTime < 0) ~> filterQuarantineData",
 				"movieGenreJunction sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
@@ -135,8 +227,28 @@
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> movieGenreJunctionSink",
-				"aggregate1 sink(allowSchemaDrift: true,",
+				"genreLookupSilver sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> silverGenreLookupSink",
+				"adjustColumnOrder sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> silverLanguageLookupOutput",
+				"filterCleanData sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> sink1"
 			]

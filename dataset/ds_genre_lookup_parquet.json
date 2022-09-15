@@ -1,0 +1,19 @@
+{
+	"name": "ds_genre_lookup_parquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storage_blob",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "output-genre-lookup"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
