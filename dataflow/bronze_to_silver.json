@@ -19,6 +19,9 @@
 						"type": "DatasetReference"
 					},
 					"name": "movieGenreJunctionSink"
+				},
+				{
+					"name": "sink1"
 				}
 			],
 			"transformations": [
@@ -39,6 +42,12 @@
 				},
 				{
 					"name": "movieGenreJunction"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "select2"
 				}
 			],
 			"scriptLines": [
@@ -98,7 +107,7 @@
 				"filterNew derive(movie_value = movie) ~> copyMovieColumn",
 				"silverReady select(mapColumn(",
 				"          Id,",
-				"          genres = genres",
+				"          genres",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
@@ -110,6 +119,14 @@
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> movieGenreJunction",
+				"select2 aggregate(groupBy(genre_id),",
+				"     genre_name = max(genre_name)) ~> aggregate1",
+				"movieGenreJunction select(mapColumn(",
+				"          genre_id,",
+				"          genre_name",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
 				"movieGenreJunction sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
@@ -117,7 +134,11 @@
 				"     preCommands: [],",
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> movieGenreJunctionSink"
+				"     skipDuplicateMapOutputs: true) ~> movieGenreJunctionSink",
+				"aggregate1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
 			]
 		}
 	}
