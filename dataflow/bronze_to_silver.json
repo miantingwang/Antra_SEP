@@ -12,19 +12,33 @@
 					"name": "bronzeInput"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_movie_genre_junction_parquet",
+						"type": "DatasetReference"
+					},
+					"name": "movieGenreJunctionSink"
+				}
+			],
 			"transformations": [
 				{
-					"name": "filter1"
+					"name": "filterNew"
 				},
 				{
-					"name": "parse1"
+					"name": "parseMovieColumn"
+				},
+				{
+					"name": "silverReady"
+				},
+				{
+					"name": "copyMovieColumn"
 				},
 				{
 					"name": "select1"
 				},
 				{
-					"name": "derivedColumn1"
+					"name": "movieGenreJunction"
 				}
 			],
 			"scriptLines": [
@@ -40,8 +54,8 @@
 				"     limit: 100,",
 				"     ignoreNoFilesFound: false,",
 				"     format: 'parquet') ~> bronzeInput",
-				"bronzeInput filter(status == 'new') ~> filter1",
-				"derivedColumn1 parse(movie_value = movie_value ? (Id as integer,",
+				"bronzeInput filter(status == 'new') ~> filterNew",
+				"copyMovieColumn parse(movie_value = movie_value ? (Id as integer,",
 				"          Title as string,",
 				"          Overview as string,",
 				"          Tagline as string,",
@@ -59,18 +73,51 @@
 				"          genres as (id as integer,",
 				"     name as string)[]),",
 				"     format: 'json',",
-				"     documentForm: 'singleDocument') ~> parse1",
-				"parse1 select(mapColumn(",
-				"          datasource = movie,",
-				"          ingesttime,",
+				"     documentForm: 'singleDocument') ~> parseMovieColumn",
+				"parseMovieColumn select(mapColumn(",
 				"          movie,",
-				"          status,",
-				"          p_ingestdate,",
-				"          movie_value",
+				"          Id = movie_value.Id,",
+				"          Title = movie_value.Title,",
+				"          Overview = movie_value.Overview,",
+				"          Tagline = movie_value.Tagline,",
+				"          Budget = movie_value.Budget,",
+				"          Revenue = movie_value.Revenue,",
+				"          ImdbUrl = movie_value.ImdbUrl,",
+				"          TmdbUrl = movie_value.TmdbUrl,",
+				"          PosterUrl = movie_value.PosterUrl,",
+				"          BackdropUrl = movie_value.BackdropUrl,",
+				"          OriginalLanguage = movie_value.OriginalLanguage,",
+				"          ReleaseDate = movie_value.ReleaseDate,",
+				"          RunTime = movie_value.RunTime,",
+				"          Price = movie_value.Price,",
+				"          CreatedDate = movie_value.CreatedDate,",
+				"          genres = movie_value.genres",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> silverReady",
+				"filterNew derive(movie_value = movie) ~> copyMovieColumn",
+				"silverReady select(mapColumn(",
+				"          Id,",
+				"          genres = genres",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"filter1 derive(movie_value = movie) ~> derivedColumn1"
+				"select1 foldDown(unroll(genres, genres),",
+				"     mapColumn(",
+				"          movie_id = Id,",
+				"          genre_id = genres.id,",
+				"          genre_name = genres.name",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> movieGenreJunction",
+				"movieGenreJunction sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> movieGenreJunctionSink"
 			]
 		}
 	}
