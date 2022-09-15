@@ -39,7 +39,7 @@
 						"referenceName": "ds_movie_silver_parquet",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "silverCleanMovieOutput"
 				}
 			],
 			"transformations": [
@@ -93,6 +93,15 @@
 				},
 				{
 					"name": "filterQuarantineData"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "derivedColumn2"
 				}
 			],
 			"scriptLines": [
@@ -199,6 +208,7 @@
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join1",
 				"join1 select(mapColumn(",
+				"          movie,",
 				"          Id,",
 				"          Title,",
 				"          Overview,",
@@ -219,6 +229,27 @@
 				"     skipDuplicateMapOutputs: true) ~> select1",
 				"select1 filter(RunTime >= 0) ~> filterCleanData",
 				"select1 filter(RunTime < 0) ~> filterQuarantineData",
+				"filterQuarantineData derive(status = \"quarantined\") ~> derivedColumn1",
+				"derivedColumn2 select(mapColumn(",
+				"          Id,",
+				"          Title,",
+				"          Overview,",
+				"          Tagline,",
+				"          Budget,",
+				"          Revenue,",
+				"          ImdbUrl,",
+				"          TmdbUrl,",
+				"          PosterUrl,",
+				"          BackdropUrl,",
+				"          language_id,",
+				"          ReleaseDate,",
+				"          RunTime,",
+				"          Price,",
+				"          p_CreatedDate",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"filterCleanData derive(status = \"loaded\") ~> derivedColumn2",
 				"movieGenreJunction sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
@@ -243,14 +274,14 @@
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> silverLanguageLookupOutput",
-				"filterCleanData sink(allowSchemaDrift: true,",
+				"select2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink1"
+				"     skipDuplicateMapOutputs: true) ~> silverCleanMovieOutput"
 			]
 		}
 	}
