@@ -29,7 +29,7 @@
 					"name": "addMetaData"
 				},
 				{
-					"name": "stringify1"
+					"name": "stringifyMovieColumn"
 				}
 			],
 			"scriptLines": [
@@ -41,7 +41,7 @@
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'arrayOfDocuments',",
 				"     wildcardPaths:['*.json']) ~> rawMovieJson",
-				"rawMovieJson foldDown(unroll(movie),",
+				"rawMovieJson foldDown(unroll(movie, movie),",
 				"     mapColumn(",
 				"          movie",
 				"     ),",
@@ -53,8 +53,8 @@
 				"          status = \"new\",",
 				"          movie = movie) ~> addMetaData",
 				"addMetaData stringify(movie = movie ? string,",
-				"     format: 'json') ~> stringify1",
-				"stringify1 sink(allowSchemaDrift: true,",
+				"     format: 'json') ~> stringifyMovieColumn",
+				"stringifyMovieColumn sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
 				"     umask: 0022,",
@@ -67,10 +67,6 @@
 				"          ingesttime,",
 				"          movie,",
 				"          status,",
-				"          p_ingestdate",
-				"     ),",
-				"     partitionBy('key',",
-				"          0,",
 				"          p_ingestdate",
 				"     )) ~> bronzeMovieParquetOutput"
 			]
